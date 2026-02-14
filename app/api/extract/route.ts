@@ -50,7 +50,7 @@ Be extremely thorough and detailed. Do not hallucinate — base everything on ac
 `;
 
     const result = await generateText({
-      model: "openai/gpt-5",
+      model: "google/gemini-2.0-flash",
       prompt,
       tools: {
         renderPage: renderPageTool, // tool name matches what the prompt says

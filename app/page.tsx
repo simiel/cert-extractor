@@ -1,12 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { gateway } from "ai";
+
+type GatewayModel = {
+  id: string;
+  displayName?: string;
+  description?: string;
+};
 
 export default function Home() {
   const [url, setUrl] = useState("");
   const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [models, setModels] = useState<GatewayModel[]>([]);
+  const [selectedModel, setSelectedModel] = useState<string>("");
+
+  useEffect(() => {
+    const loadModels = async () => {
+      try {
+        const available = await gateway.getAvailableModels();
+        console.log("Available models from gateway:", available);
+        setModels(available);
+        if (available.length > 0) {
+          setSelectedModel(available[0].id);
+        }
+      } catch (e) {
+        console.error("Failed to load models from gateway", e);
+      }
+    };
+    loadModels();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,9 +75,23 @@ export default function Home() {
           className="w-full p-3 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
+
+        <select
+          value={selectedModel}
+          onChange={(e) => setSelectedModel(e.target.value)}
+          className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          disabled={models.length === 0}
+        >
+          {models.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.displayName ?? m.id}
+            </option>
+          ))}
+        </select>
+
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !selectedModel}
           className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
         >
           {loading ? "Extracting details..." : "Extract Learning Details"}
