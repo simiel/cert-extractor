@@ -28,7 +28,9 @@ async function renderPage(url) {
 }
 
 (async () => {
-  const url = process.argv[2] || "https://example.com"; // or a Coursera certificate URL
+  const url =
+    process.argv[2] ||
+    "https://www.coursera.org/account/accomplishments/professional-cert/CDY6A3Z99GQC"; // or a Coursera certificate URL
 
   console.log("Fetching visible text from:", url);
 
