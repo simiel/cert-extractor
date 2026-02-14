@@ -2,29 +2,11 @@ import { xai } from "@ai-sdk/xai";
 import { generateText, tool, streamText } from "ai";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { renderPageTool } from "@/tools/renderPage";
 
 export const maxDuration = 60; // Allow longer responses
 
 // Tool that lets the model fetch and inspect web pages
-const fetchPage = tool({
-  description: "Fetch the raw HTML content of a web page by URL.",
-  inputSchema: z.object({
-    url: z.string().url(),
-  }),
-  async execute({ url }: { url: string }) {
-    const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error(`Failed to fetch URL: ${res.status} ${res.statusText}`);
-    }
-    const html = await res.text();
-    // limit the HTML size to avoid overwhelming the model
-    const maxSize = 100000; // 100 KB
-    if (html.length > maxSize) {
-      return { url, html: html.slice(0, maxSize) + "\n\n[HTML truncated]" };
-    }
-    return { url, html };
-  },
-});
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,14 +22,14 @@ export async function POST(req: NextRequest) {
     const prompt = `
 Take this URL: ${url.startsWith("http") ? url : "https://" + url}
 
-You have access to a tool called "fetchPage" that can download the HTML content of any URL.
+You have access to a tool called "renderPageTool" that can download the HTML content of any URL.
 Always use this tool to inspect the actual page content instead of guessing.
 
 Start from this URL: ${url.startsWith("http") ? url : "https://" + url}
 
-1. Call fetchPage on the certificate URL.
+1. Call renderPageTool on the certificate URL.
 2. From that HTML, identify any linked main course/specialization/program pages.
-3. Call fetchPage on those as needed.
+3. Call renderPageTool on those as needed.
 4. From the fetched HTML only (no hallucinations), extract:
 
 - Certificate metadata (holder, issue date, title, issuer, duration, level, rating, etc.)
@@ -67,7 +49,7 @@ Be extremely thorough and detailed. Use available tools if needed to fetch and a
       prompt,
       temperature: 0.2, // lower for factual accuracy
       tools: {
-        addResource: fetchPage,
+        addResource: renderPageTool,
       },
     });
 
