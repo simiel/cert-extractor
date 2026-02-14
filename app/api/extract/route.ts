@@ -1,4 +1,3 @@
-import { xai } from "@ai-sdk/xai";
 import { generateText, stepCountIs } from "ai";
 import { NextRequest, NextResponse } from "next/server";
 import { renderPageTool } from "@/tools/renderPage";
@@ -24,19 +23,27 @@ Take this URL: ${normalizedUrl}
 You have access to a tool called "renderPage" that can download the visible text content of any URL.
 Always use this tool to inspect the actual page content instead of guessing.
 
+Do NOT assume this is Coursera or any specific platform. Infer the platform/provider only from the page text.
+
 Start from this URL: ${normalizedUrl}
 
-1. Call renderPage on the certificate URL.
-2. From that text, identify any linked main course/specialization/program pages.
+1. Call renderPage on the starting URL.
+2. From that text, identify any linked pages that describe:
+   - certificates
+   - courses, trainings, bootcamps
+   - degrees, programs, or other credentials
 3. Call renderPage on those as needed.
 4. From the fetched page text only (no hallucinations), extract:
 
-- Certificate metadata (holder, issue date, title, issuer, duration, level, rating, etc.)
-- In-depth description of what the credential is about and what skills/achievements the holder has
-- Full list of skills gained
-- Detailed breakdown of each course (title, hours, completion info if available, description, sub-skills)
+- Certificate / credential metadata (holder if shown, issue date, title, issuer/provider, duration, level, rating, etc.)
+- In-depth description of what the credential or learning experience is about
+- What skills, competencies, or outcomes the holder has achieved
+- Full list of skills gained, if available
+- Detailed breakdown of each course/module (title, hours, completion info if available, description, sub-skills)
 - Expected capabilities of someone who completed it
-- Anything useful for building resumes, CVs, LinkedIn profiles, cover letters
+- Anything useful for building resumes, CVs, LinkedIn profiles, or cover letters
+
+If the page is not about a certificate or learning program, explain what it contains and why no credential data could be extracted.
 
 At the end, briefly list which URLs you fetched and what you used each for.
 Be extremely thorough and detailed. Do not hallucinate — base everything on actual page content.

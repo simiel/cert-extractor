@@ -36,8 +36,9 @@ export default function Home() {
 
   return (
     <main className="container mx-auto p-6 max-w-4xl">
+      {/* generalized title */}
       <h1 className="text-3xl font-bold mb-6 text-center">
-        Coursera Certificate Extractor with Grok
+        Certificate & Course Extractor
       </h1>
 
       <form onSubmit={handleSubmit} className="mb-8">
@@ -45,7 +46,7 @@ export default function Home() {
           type="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://coursera.org/verify/specialization/EVYQWM316UA9"
+          placeholder="Paste any certificate, course, or program URL"
           className="w-full p-3 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
@@ -54,7 +55,7 @@ export default function Home() {
           disabled={loading}
           className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? "Extracting with Grok..." : "Extract Certificate Details"}
+          {loading ? "Extracting details..." : "Extract Learning Details"}
         </button>
       </form>
 
