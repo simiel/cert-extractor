@@ -1,16 +1,14 @@
 import { xai } from "@ai-sdk/xai";
-import { generateText, tool, streamText } from "ai";
+import { generateText, stepCountIs } from "ai";
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 import { renderPageTool } from "@/tools/renderPage";
 
 export const maxDuration = 60; // Allow longer responses
 
 // Tool that lets the model fetch and inspect web pages
-
 export async function POST(req: NextRequest) {
   try {
-    const { prompt: url }: { prompt: string } = await req.json();
+    const { url }: { url: string } = await req.json();
 
     console.log("Received URL for extraction:", url);
 
@@ -18,19 +16,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
 
-    // Construct the same detailed prompt you used originally
-    const prompt = `
-Take this URL: ${url.startsWith("http") ? url : "https://" + url}
+    const normalizedUrl = url.startsWith("http") ? url : "https://" + url;
 
-You have access to a tool called "renderPageTool" that can download the HTML content of any URL.
+    const prompt = `
+Take this URL: ${normalizedUrl}
+
+You have access to a tool called "renderPage" that can download the visible text content of any URL.
 Always use this tool to inspect the actual page content instead of guessing.
 
-Start from this URL: ${url.startsWith("http") ? url : "https://" + url}
+Start from this URL: ${normalizedUrl}
 
-1. Call renderPageTool on the certificate URL.
-2. From that HTML, identify any linked main course/specialization/program pages.
-3. Call renderPageTool on those as needed.
-4. From the fetched HTML only (no hallucinations), extract:
+1. Call renderPage on the certificate URL.
+2. From that text, identify any linked main course/specialization/program pages.
+3. Call renderPage on those as needed.
+4. From the fetched page text only (no hallucinations), extract:
 
 - Certificate metadata (holder, issue date, title, issuer, duration, level, rating, etc.)
 - In-depth description of what the credential is about and what skills/achievements the holder has
@@ -40,22 +39,36 @@ Start from this URL: ${url.startsWith("http") ? url : "https://" + url}
 - Anything useful for building resumes, CVs, LinkedIn profiles, cover letters
 
 At the end, briefly list which URLs you fetched and what you used each for.
-Be extremely thorough and detailed. Use available tools if needed to fetch and analyze pages. Do not hallucinate — base everything on actual page content. Explain your process and sources at the end.
+Be extremely thorough and detailed. Do not hallucinate — base everything on actual page content.
 `;
 
-    // Use Grok via AI SDK (choose a strong model)
-    const result = streamText({
-      model: "xai/grok-4", // or 'grok-4.1-fast-reasoning', 'grok-3', etc.
+    const result = await generateText({
+      model: "openai/gpt-5",
       prompt,
-      temperature: 0.2, // lower for factual accuracy
       tools: {
-        addResource: renderPageTool,
+        renderPage: renderPageTool, // tool name matches what the prompt says
       },
+      toolChoice: "auto",
+      stopWhen: stepCountIs(5),
     });
 
-    return result.toUIMessageStreamResponse();
+    console.log(
+      "Full generateText result:",
+      JSON.stringify(
+        {
+          text: result.text,
+          toolCalls: result.toolCalls,
+          finishReason: result.finishReason,
+        },
+        null,
+        2,
+      ),
+    );
+
+    // This is what your frontend reads as `data.extraction`
+    return NextResponse.json({ extraction: result.text });
   } catch (error: any) {
-    console.error(error);
+    console.error("Error in /api/extract:", error);
     return NextResponse.json(
       {
         error: "Failed to extract data: " + (error.message || "Unknown error"),

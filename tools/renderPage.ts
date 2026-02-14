@@ -22,7 +22,6 @@ export const renderPageFunc = async ({ url }: { url: string }) => {
     const text = await page.evaluate(() => {
       return document.body.innerText;
     });
-
     return text.trim() || "[No visible text found]";
   } finally {
     await browser.close();
