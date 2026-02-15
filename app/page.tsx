@@ -5,8 +5,9 @@ import { gateway } from "ai";
 
 type GatewayModel = {
   id: string;
-  displayName?: string;
+  name?: string;
   description?: string;
+  modelType?: string;
 };
 
 export default function Home() {
@@ -43,7 +44,7 @@ export default function Home() {
       const res = await fetch("/api/extract", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url, model: selectedModel }),
       });
 
       if (!res.ok) throw new Error("Extraction failed");
@@ -84,7 +85,7 @@ export default function Home() {
         >
           {models.map((m) => (
             <option key={m.id} value={m.id}>
-              {m.displayName ?? m.id}
+              {m.name ?? m.id}
             </option>
           ))}
         </select>
