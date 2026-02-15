@@ -64,7 +64,7 @@ export default function Home() {
     <main className="container mx-auto p-6 max-w-4xl">
       {/* generalized title */}
       <h1 className="text-3xl font-bold mb-6 text-center">
-        Certificate & Course Extractor
+        Simiel's Certificate & Course Extractor
       </h1>
 
       <form onSubmit={handleSubmit} className="mb-8">
