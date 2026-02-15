@@ -7,7 +7,7 @@ export const maxDuration = 60; // Allow longer responses
 // Tool that lets the model fetch and inspect web pages
 export async function POST(req: NextRequest) {
   try {
-    const { url }: { url: string } = await req.json();
+    const { url, model }: { url: string; model?: string } = await req.json();
 
     console.log("Received URL for extraction:", url);
 
@@ -49,31 +49,35 @@ At the end, briefly list which URLs you fetched and what you used each for.
 Be extremely thorough and detailed. Do not hallucinate — base everything on actual page content.
 `;
 
-    const result = await generateText({
-      model: "google/gemini-2.0-flash",
-      prompt,
-      tools: {
-        renderPage: renderPageTool, // tool name matches what the prompt says
-      },
-      toolChoice: "auto",
-      stopWhen: stepCountIs(5),
+    // const result = await generateText({
+    //   model: model || "google/gemini-2.0-flash",
+    //   prompt,
+    //   tools: {
+    //     renderPage: renderPageTool, // tool name matches what the prompt says
+    //   },
+    //   toolChoice: "auto",
+    //   stopWhen: stepCountIs(5),
+    // });
+
+    // console.log(
+    //   "Full generateText result:",
+    //   JSON.stringify(
+    //     {
+    //       text: result.text,
+    //       toolCalls: result.toolCalls,
+    //       finishReason: result.finishReason,
+    //     },
+    //     null,
+    //     2,
+    //   ),
+    // );
+
+    // // This is what your frontend reads as `data.extraction`
+    // return NextResponse.json({ extraction: result.text });
+    return NextResponse.json({
+      extraction:
+        "Extraction logic is currently disabled for testing purposes. Please enable the generateText call in the code to get real extraction results.",
     });
-
-    console.log(
-      "Full generateText result:",
-      JSON.stringify(
-        {
-          text: result.text,
-          toolCalls: result.toolCalls,
-          finishReason: result.finishReason,
-        },
-        null,
-        2,
-      ),
-    );
-
-    // This is what your frontend reads as `data.extraction`
-    return NextResponse.json({ extraction: result.text });
   } catch (error: any) {
     console.error("Error in /api/extract:", error);
     return NextResponse.json(

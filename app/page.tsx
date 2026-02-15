@@ -22,9 +22,9 @@ export default function Home() {
       try {
         const available = await gateway.getAvailableModels();
         console.log("Available models from gateway:", available);
-        setModels(available);
-        if (available.length > 0) {
-          setSelectedModel(available[0].id);
+        setModels(available.models as GatewayModel[]);
+        if (available.models.length > 0) {
+          setSelectedModel(available.models[0].id);
         }
       } catch (e) {
         console.error("Failed to load models from gateway", e);
